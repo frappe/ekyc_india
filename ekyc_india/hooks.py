@@ -265,3 +265,11 @@ workflow_methods = [
 		"method": "ekyc_india.ekyc_india.doctype.digio_settings.digio_settings.make_ekyc_request",
 	},
 ]
+
+# Lending owns the idea of a bureau and knows nothing about who sells one in India.
+lending_integration_adapters = [
+	"ekyc_india.integrations.surepass.SurepassCibilAdapter",
+	"ekyc_india.integrations.surepass.SurepassCrifAdapter",
+	"ekyc_india.integrations.surepass.SurepassExperianAdapter",
+	"ekyc_india.integrations.surepass.SurepassEquifaxAdapter",
+]

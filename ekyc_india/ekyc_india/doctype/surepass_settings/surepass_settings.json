@@ -1,0 +1,147 @@
+{
+ "actions": [],
+ "creation": "2026-09-14 06:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "production_settings_section",
+  "production_url",
+  "enable_production",
+  "column_break_prod",
+  "api_client_id",
+  "api_secret",
+  "sandbox_settings_section",
+  "sandbox_url",
+  "enable_sandbox",
+  "column_break_sandbox",
+  "sandbox_api_client_id",
+  "sandbox_api_secret",
+  "connection_settings_section",
+  "timeout",
+  "column_break_connection",
+  "extra_config"
+ ],
+ "fields": [
+  {
+   "fieldname": "production_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Production Settings"
+  },
+  {
+   "depends_on": "enable_production",
+   "description": "For example https://kyc-api.surepass.app/api/v1",
+   "fieldname": "production_url",
+   "fieldtype": "Data",
+   "label": "Production URL",
+   "mandatory_depends_on": "enable_production"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_production",
+   "fieldtype": "Check",
+   "label": "Enable Production"
+  },
+  {
+   "fieldname": "column_break_prod",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "enable_production",
+   "description": "Surepass authenticates with the token alone. Leave this empty unless they ask for it.",
+   "fieldname": "api_client_id",
+   "fieldtype": "Password",
+   "label": "API Client ID"
+  },
+  {
+   "depends_on": "enable_production",
+   "description": "The bearer token from the Surepass console.",
+   "fieldname": "api_secret",
+   "fieldtype": "Password",
+   "label": "API Secret",
+   "mandatory_depends_on": "enable_production"
+  },
+  {
+   "fieldname": "sandbox_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Sandbox Settings"
+  },
+  {
+   "depends_on": "enable_sandbox",
+   "description": "For example https://sandbox.surepass.app/api/v1",
+   "fieldname": "sandbox_url",
+   "fieldtype": "Data",
+   "label": "Sandbox URL",
+   "mandatory_depends_on": "enable_sandbox"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_sandbox",
+   "fieldtype": "Check",
+   "label": "Enable Sandbox"
+  },
+  {
+   "fieldname": "column_break_sandbox",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "enable_sandbox",
+   "description": "Surepass authenticates with the token alone. Leave this empty unless they ask for it.",
+   "fieldname": "sandbox_api_client_id",
+   "fieldtype": "Password",
+   "label": "Sandbox API Client ID"
+  },
+  {
+   "depends_on": "enable_sandbox",
+   "description": "The sandbox bearer token from the Surepass console.",
+   "fieldname": "sandbox_api_secret",
+   "fieldtype": "Password",
+   "label": "Sandbox API Secret",
+   "mandatory_depends_on": "enable_sandbox"
+  },
+  {
+   "fieldname": "connection_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Connection Settings"
+  },
+  {
+   "default": "30",
+   "description": "Seconds to wait for a reply before giving up.",
+   "fieldname": "timeout",
+   "fieldtype": "Int",
+   "label": "Timeout"
+  },
+  {
+   "fieldname": "column_break_connection",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "A JSON object, for anything Surepass adds that has no field of its own yet.",
+   "fieldname": "extra_config",
+   "fieldtype": "Small Text",
+   "label": "Extra Config"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-14 06:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Ekyc India",
+ "name": "Surepass Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
