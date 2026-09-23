@@ -13,6 +13,8 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime
 from frappe.utils.password import get_decrypted_password
 
+from ekyc_india.kfs import is_kfs_valid
+
 
 class DigioSettings(Document):
 	pass
@@ -22,6 +24,8 @@ class DigioSettings(Document):
 
 
 def make_esignature_request(doc):
+	check_kfs_before_esign(doc)
+
 	general_settings = get_general_settings()
 	signers = [
 		{
@@ -40,7 +44,7 @@ def make_esignature_request(doc):
 		send_sign_link=bool(general_settings.get("send_sign_link")),
 		generate_access_token=bool(general_settings.get("generate_access_token")),
 		file_name=doc.name,
-		file_data=get_file_data_in_base64(doc.doctype, doc.name),
+		file_data=get_file_data_in_base64(doc.doctype, doc.name, print_format=get_esign_print_format(doc)),
 	)
 
 	api_client_id, api_client_secret, base_url = get_api_credentials_and_url()
@@ -51,7 +55,35 @@ def make_esignature_request(doc):
 		json=body,
 	)
 
-	save_request_log(response, linked_doctype=doc.doctype, linked_docname=doc.name, request_type="eSign")
+	save_request_log(
+		response,
+		linked_doctype=doc.doctype,
+		linked_docname=doc.name,
+		request_type="eSign",
+		kfs_version=doc.get("kfs_version"),
+	)
+
+
+def get_esign_print_format(doc):
+	if (
+		doc.doctype == "Loan Application"
+		and "lending" in frappe.get_installed_apps()
+		and is_kfs_valid(doc)
+		and frappe.db.get_single_value("Loan Origination Settings", "enforce_kfs_before_esign")
+	):
+		return "Key Facts Statement"
+	return None
+
+
+def check_kfs_before_esign(doc):
+	if doc.doctype != "Loan Application" or "lending" not in frappe.get_installed_apps():
+		return
+
+	if not frappe.db.get_single_value("Loan Origination Settings", "enforce_kfs_before_esign"):
+		return
+
+	if not is_kfs_valid(doc):
+		frappe.throw(_("Please generate the Key Facts Statement (KFS) before requesting eSignature."))
 
 
 # Outbound — eKYC
@@ -156,7 +188,8 @@ def dispatch_webhook_event(payload):
 		frappe.log_error(title="Digio Unhandled Event", message=json.dumps(payload, indent=2))
 
 
-# Webhook handler — all events update Digio Request Log only
+# Webhook handler — updates Digio Request Log, and for a signed eSign
+# request, records KFS acknowledgement on the linked Loan Application.
 
 
 def log_webhook_status(payload, event, status):
@@ -167,7 +200,26 @@ def log_webhook_status(payload, event, status):
 		document = get_document_data(payload)
 		digio_id = document.get("id") or payload.get("id")
 
-	update_request_log(digio_id=digio_id, status=status, raw_payload=payload)
+	log = update_request_log(digio_id=digio_id, status=status, raw_payload=payload)
+
+	if event == "doc.signed":
+		acknowledge_kfs_on_signed(log)
+
+
+def acknowledge_kfs_on_signed(log):
+	if not (
+		log.linked_doctype == "Loan Application"
+		and log.linked_docname
+		and "lending" in frappe.get_installed_apps()
+	):
+		return
+
+	if not log.get("kfs_version"):
+		return
+
+	current_kfs_version = frappe.db.get_value("Loan Application", log.linked_docname, "kfs_version")
+	if current_kfs_version and current_kfs_version == log.kfs_version:
+		frappe.db.set_value("Loan Application", log.linked_docname, "borrower_acknowledged", 1)
 
 
 # Payload extractors
@@ -186,13 +238,14 @@ def get_document_data(payload):
 # Request log helpers
 
 
-def save_request_log(response, linked_doctype=None, linked_docname=None, request_type=None):
+def save_request_log(response, linked_doctype=None, linked_docname=None, request_type=None, kfs_version=None):
 	doc = frappe.new_doc("Digio Request Log")
 	doc.digio_id = response.get("id")
 	doc.response_json = json.dumps(response, indent=1)
 	doc.linked_doctype = linked_doctype
 	doc.linked_docname = linked_docname
 	doc.request_type = request_type
+	doc.kfs_version = kfs_version
 	doc.status = "Pending"
 	doc.save(ignore_permissions=True)
 
@@ -210,6 +263,8 @@ def update_request_log(digio_id, status, raw_payload):
 	log.webhook_received_at = now_datetime()
 	log.webhook_payload = json.dumps(raw_payload, indent=2)
 	log.save(ignore_permissions=True)
+
+	return log
 
 
 # Shared utilities
@@ -250,9 +305,11 @@ def get_api_credentials_and_url():
 	return api_client_id, api_client_secret, url
 
 
-def get_file_data_in_base64(doctype, docname):
+def get_file_data_in_base64(doctype, docname, print_format=None):
 	return base64.b64encode(
-		frappe.get_print(doctype, docname, as_pdf=True, pdf_generator="wkhtmltopdf")
+		frappe.get_print(
+			doctype, docname, print_format=print_format, as_pdf=True, pdf_generator="wkhtmltopdf"
+		)
 	).decode()
 
 

@@ -96,12 +96,12 @@ add_to_apps_screen = [
 # ------------
 
 # before_install = "ekyc_india.install.before_install"
-# after_install = "ekyc_india.install.after_install"
+after_install = "ekyc_india.install.after_install"
 
 # Uninstallation
 # ------------
 
-# before_uninstall = "ekyc_india.uninstall.before_uninstall"
+before_uninstall = "ekyc_india.uninstall.before_uninstall"
 # after_uninstall = "ekyc_india.uninstall.after_uninstall"
 
 # Integration Setup
@@ -110,7 +110,7 @@ add_to_apps_screen = [
 # Name of the app being installed is passed as an argument
 
 # before_app_install = "ekyc_india.utils.before_app_install"
-# after_app_install = "ekyc_india.utils.after_app_install"
+after_app_install = "ekyc_india.install.after_app_install"
 
 # Integration Cleanup
 # -------------------
@@ -142,13 +142,14 @@ add_to_apps_screen = [
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Loan Application": {
+		"before_save": "ekyc_india.kfs.loan_application_before_save",
+	}
+}
+
+# JS for the Generate KFS button on Loan Application.
+doctype_js = {"Loan Application": "public/js/loan_application.js"}
 
 # Scheduled Tasks
 # ---------------
@@ -263,5 +264,16 @@ workflow_methods = [
 	{
 		"name": "Send eKYC Request",
 		"method": "ekyc_india.ekyc_india.doctype.digio_settings.digio_settings.make_ekyc_request",
+	},
+]
+
+# Fixtures
+# --------
+# Custom fields are created via create_kfs_custom_fields() (see install.py /
+# patches/add_kfs_custom_fields.py); only the KFS print format ships as a fixture.
+fixtures = [
+	{
+		"dt": "Print Format",
+		"filters": [["name", "=", "Key Facts Statement"]],
 	},
 ]

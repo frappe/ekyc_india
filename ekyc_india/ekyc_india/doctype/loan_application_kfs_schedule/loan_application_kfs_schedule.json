@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-19 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "instalment_no",
+  "payment_date",
+  "outstanding_principal",
+  "column_break_kfs1",
+  "principal_amount",
+  "interest_amount",
+  "instalment_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "instalment_no",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Instalment No."
+  },
+  {
+   "fieldname": "payment_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due Date"
+  },
+  {
+   "fieldname": "outstanding_principal",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Outstanding Principal"
+  },
+  {
+   "fieldname": "column_break_kfs1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "principal_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Principal"
+  },
+  {
+   "fieldname": "interest_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Interest"
+  },
+  {
+   "fieldname": "instalment_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Instalment"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-19 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Ekyc India",
+ "name": "Loan Application KFS Schedule",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
