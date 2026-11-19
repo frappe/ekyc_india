@@ -10,7 +10,7 @@ import frappe
 from frappe import _
 from frappe.integrations.utils import make_request
 from frappe.model.document import Document
-from frappe.utils import now_datetime
+from frappe.utils import get_email_address, now_datetime
 from frappe.utils.password import get_decrypted_password
 
 from ekyc_india.kfs import is_kfs_valid
@@ -330,12 +330,28 @@ def get_signers(doc):
 
 		if child_field:
 			for d in doc.get(child_field):
-				signers.append(d.get(data_field))
+				signers.append(get_signer(d, data_field))
 		else:
-			email_ids = doc.get(data_field).replace(",", "\n")
+			email_ids = get_signer(doc, data_field).replace(",", "\n")
 			signers += email_ids.split("\n")
 
 	return signers
+
+
+def get_signer(doc, fieldname):
+	value = doc.get(fieldname)
+	if value and is_user_field(doc, fieldname):
+		return get_email_address(value)
+
+	return value
+
+
+def is_user_field(doc, fieldname):
+	if fieldname == "owner":
+		return True
+
+	df = doc.meta.get_field(fieldname)
+	return bool(df and df.fieldtype == "Link" and df.options == "User")
 
 
 def get_customer_name(email_id):
